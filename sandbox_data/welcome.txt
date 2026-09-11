@@ -1,0 +1,3 @@
+Welcome to Agent Workbench sandbox.
+This file is readable by the sandbox_file_read tool.
+Try asking: "Read sandbox_data/welcome.txt and summarize it."

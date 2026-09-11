@@ -1,0 +1,14 @@
+{
+  "name": "Acme Robotics",
+  "founded": 2019,
+  "hq": {"city": "Shenzhen", "country": "CN"},
+  "teams": [
+    {"name": "LLM Platform", "headcount": 12},
+    {"name": "Agent Runtime", "headcount": 8},
+    {"name": "Eval & Safety", "headcount": 5}
+  ],
+  "metrics": {
+    "latency_p95_ms": 420,
+    "tool_success_rate": 0.97
+  }
+}

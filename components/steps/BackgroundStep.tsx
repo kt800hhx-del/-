@@ -83,7 +83,7 @@ export function BackgroundStep({
         </Field>
         <Field
           label={`工作年限：${background.yearsExperience} 年`}
-          hint="含实习可按折算填写；没有工作经验填 0。年限只影响对照 Title，不决定你能不能学。"
+          hint="含实习可按折算填写；没有工作经验填 0。年限只影响对照职级称呼，不决定你能不能学。"
         >
           <input
             type="range"

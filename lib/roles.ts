@@ -695,14 +695,14 @@ export const ROLES: RoleProfile[] = [
     nameEn: "Agent Engineer",
     tagline: "工具调用、状态机与失败恢复",
     summary:
-      "比「会调 Chat API」更窄：JD 关注工具/函数调用、多步计划、记忆、权限与可观测。很多岗位从后端或 LLM 应用岗迁移而来，单独 Title 仍在形成中。",
+      "比「会调 Chat API」更窄：JD 关注工具/函数调用、多步计划、记忆、权限与可观测。很多岗位从后端或 LLM 应用岗迁移而来，单独岗位名称仍在形成中。",
     typicalTitles: {
       junior: "Agent 应用开发（需有工程底子）",
       mid: "Agent 开发工程师",
       senior: "高级 Agent / 智能体平台工程师",
     },
     yearBands: { junior: [1, 3], mid: [3, 6], senior: [6, 15] },
-    educationNote: "更看重软件工程与系统能力；纯提示词经验通常不足以支撑该 Title。",
+    educationNote: "更看重软件工程与系统能力；纯提示词经验通常不足以支撑该岗位名称。",
     sources: [
       "国内「智能体开发 / Agent 工程师 / 应用算法（Agent）」JD 对工具调用、工作流与评测的描述",
       "全球招聘与开源 Agent 框架文档中对 tool use、memory、guardrail 的通行分解",
@@ -793,7 +793,7 @@ export const ROLES: RoleProfile[] = [
     nameEn: "DevOps / SRE",
     tagline: "交付、稳定性与可恢复性",
     summary:
-      "国内 Title 含运维开发、DevOps、SRE、平台工程。JD 看 Linux、网络、CI/CD、容器与云，高级岗还看容量、事故复盘与 IaC。",
+      "国内岗位名称含运维开发、DevOps、SRE、平台工程。JD 看 Linux、网络、CI/CD、容器与云，高级岗还看容量、事故复盘与 IaC。",
     typicalTitles: {
       junior: "运维 / 初级 DevOps（1–3 年）",
       mid: "DevOps / SRE（3–5 年）",

@@ -3,6 +3,14 @@
 import type { CareerAnalysis } from "@/lib/types";
 
 const LEVEL_LABEL = { must: "硬性 / 初筛常见", should: "中级高频", nice: "加分" };
+const CATEGORY_LABEL: Record<string, string> = {
+  language: "语言",
+  framework: "框架",
+  infra: "基础设施",
+  domain: "领域",
+  tool: "工具",
+  soft: "协作",
+};
 
 export function RequirementsStep({ analysis }: { analysis: CareerAnalysis }) {
   const { role, seniority } = analysis;
@@ -16,7 +24,7 @@ export function RequirementsStep({ analysis }: { analysis: CareerAnalysis }) {
       </header>
 
       <div className="paper-card rounded-2xl p-5">
-        <p className="text-xs text-sage">按你的年限对照的常见 Title</p>
+        <p className="text-xs text-sage">按你的年限对照的常见职级称呼</p>
         <p className="mt-1 font-serif text-xl">{role.typicalTitles[seniority]}</p>
         <div className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-3">
           <div>
@@ -47,7 +55,7 @@ export function RequirementsStep({ analysis }: { analysis: CareerAnalysis }) {
                   <article key={skill.id} className="rounded-2xl border border-line bg-card p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h4 className="font-medium">{skill.name}</h4>
-                      <span className="text-xs text-sage">{skill.category}</span>
+                      <span className="text-xs text-sage">{CATEGORY_LABEL[skill.category] ?? skill.category}</span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-muted">{skill.jdPattern}</p>
                   </article>

@@ -149,7 +149,7 @@ export function buildPhases(
       id: "align",
       name: "对齐岗位表达",
       durationMonths: phase3Months,
-      goal: "让简历、作品介绍和面试答案指向同一目标 Title，而不是一份通投简历打所有方向。",
+      goal: "让简历、作品介绍和面试答案指向同一目标岗位，而不是一份通投简历打所有方向。",
       actions: [
         {
           title: "按目标岗重写简历要点",
@@ -171,7 +171,7 @@ export function buildPhases(
         },
       ],
       verification:
-        "招聘流程的普遍结构是：关键词初筛 → 简历项目深挖 → 基础/系统设计或案例分析。把表达对齐目标 Title，是跟这个漏斗匹配，而不是包装。",
+        "招聘流程的普遍结构是：关键词初筛 → 简历项目深挖 → 基础/系统设计或案例分析。把表达对齐目标岗位，是跟这个漏斗匹配，而不是包装。",
     },
     {
       id: "search",

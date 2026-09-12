@@ -6,7 +6,7 @@ export default function Home() {
       <header className="border-b border-line/80">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs tracking-[0.28em] text-celadon">CAREER INKSTONE</p>
+            <p className="text-xs tracking-[0.28em] text-celadon">IT 职业规划</p>
             <h1 className="mt-2 font-serif text-4xl leading-tight md:text-5xl">职业规划砚台</h1>
             <p className="mt-3 max-w-xl text-sm leading-7 text-muted">
               一套固定的 IT 职业规划方法：背景是输入，岗位要求来自常见招聘描述结构，输出是可验证的补齐路径。

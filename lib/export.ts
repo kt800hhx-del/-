@@ -61,7 +61,7 @@ ${actions}
 > 生成日期：${today}  
 > 工具：职业规划砚台（方法论固定，简历/背景只作为输入）  
 > 技能匹配度（基于已识别技能）：${matchScore}%  
-> 按年限对照的常见 Title：${role.typicalTitles[seniority]}  
+> 按年限对照的常见职级称呼：${role.typicalTitles[seniority]}  
 > 保守总周期：约 **${totalMonths[0]}–${totalMonths[1]} 个月**
 
 ## 使用边界
@@ -98,7 +98,7 @@ ${background.resumeText.trim() || "（未粘贴）"}
 
 ${role.summary}
 
-### 常见 Title 对照
+### 常见职级称呼对照
 
 - 初级：${role.typicalTitles.junior}
 - 中级：${role.typicalTitles.mid}

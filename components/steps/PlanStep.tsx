@@ -40,7 +40,7 @@ export function PlanStep({
         </p>
         <div className="flex flex-wrap gap-2">
           <Button type="button" onClick={exportPlan}>
-            下载 Markdown
+            下载 Markdown 计划
           </Button>
           <Button type="button" variant="outline" onClick={copyPlan}>
             {copied ? "已复制" : "复制全文"}

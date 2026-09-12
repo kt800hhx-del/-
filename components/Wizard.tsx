@@ -51,7 +51,7 @@ export function Wizard() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pb-28 pt-6 md:pt-10">
+    <div className="mx-auto w-full max-w-3xl px-4 pb-36 pt-6 md:pt-10">
       <div className="step-rail mb-8 flex gap-2 overflow-x-auto">
         {STEP_LABELS.map((label, index) => {
           const active = index === step;

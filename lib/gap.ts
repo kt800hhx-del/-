@@ -37,7 +37,7 @@ export function analyzeGaps(background: UserBackground, role: RoleProfile): GapI
   const midMin = role.yearBands.mid[0];
   const seniorMin = role.yearBands.senior[0];
   let expSeverity: GapItem["severity"] = "met";
-  let expAdvice = "年限本身不是Offer，但仍能对上该 Title 的常见讨论区间。";
+  let expAdvice = "年限本身不是录用承诺，但仍能对上该职级称呼的常见讨论区间。";
   if (background.yearsExperience < 1 && seniority === "junior") {
     expSeverity = "moderate";
     expAdvice = "按应届/转行初级路径准备：用项目年限补偿职场年限，避免直接对标中级 JD。";

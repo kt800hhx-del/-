@@ -66,10 +66,14 @@ ${skills
         .map((action, i) => {
           const tasks = action.weeklyTasks.map((t) => `       - ${t}`).join("\n");
           const res = action.resources
-            .map((r) => `       - [${r.name}](${r.url})（${r.kind}）：${r.note}`)
+            .map(
+              (r) =>
+                `       - [${r.name}](${r.url})（${r.kind}）\n         - 针对：${r.closesGap || action.targetGap} 差距\n         - 学完后：${r.finishCriteria || r.note}`,
+            )
             .join("\n");
           return `  ${i + 1}. **${action.title}**（约 ${action.weeks} 周）
      - ${action.detail}
+     - 针对差距：${action.targetGap || "本条行动"}
      - 周级任务：
 ${tasks}
      - 交付物：${action.deliverable}
@@ -78,7 +82,7 @@ ${tasks}
         .join("\n");
       const acc = phase.acceptance.map((item) => `- ${item}`).join("\n");
       const res = phase.resources
-        .map((r) => `- [${r.name}](${r.url})（${r.kind}）：${r.note}`)
+        .map((r) => `- [${r.name}](${r.url})（${r.kind}）— 针对：${r.closesGap} 差距；学完后：${r.finishCriteria || r.note}`)
         .join("\n");
       return `### 阶段 ${index + 1}：${phase.name}（约 ${phase.durationMonths[0]}–${phase.durationMonths[1]} 个月）
 

@@ -136,26 +136,43 @@ export function ReportField({ label, children }: { label: string; children: Reac
   );
 }
 
-export function ResourceList({ resources }: { resources: ResourceRef[] }) {
+export function ResourceList({
+  resources,
+  targetGap,
+}: {
+  resources: ResourceRef[];
+  targetGap?: string;
+}) {
   if (!resources.length) return null;
+  const groupLabel = targetGap || resources[0]?.closesGap;
   return (
-    <ul className="mt-2 space-y-3">
-      {resources.map((res) => (
-        <li key={`${res.url}-${res.name}`} className="text-[13px] leading-6">
-          <span className="text-[11px] text-muted">{res.kind}</span>{" "}
-          <a
-            href={res.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-[#0b57d0] underline underline-offset-2 hover:text-[#0842a0]"
-          >
-            {res.name}
-          </a>
-          <p className="break-all text-[11px] text-[#0b57d0]/80">{res.url}</p>
-          <p className="text-muted">{res.note}</p>
-        </li>
-      ))}
-    </ul>
+    <div className="mt-2">
+      {groupLabel ? (
+        <p className="mb-2 inline-block border border-accent/20 bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">
+          针对：{groupLabel} 差距
+        </p>
+      ) : null}
+      <ul className="space-y-3">
+        {resources.map((res) => (
+          <li key={`${res.url}-${res.name}`} className="text-[13px] leading-6">
+            <span className="text-[11px] text-muted">{res.kind}</span>{" "}
+            <a
+              href={res.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#0b57d0] underline underline-offset-2 hover:text-[#0842a0]"
+            >
+              {res.name}
+            </a>
+            <p className="break-all text-[11px] text-[#0b57d0]/80">{res.url}</p>
+            {res.closesGap && res.closesGap !== groupLabel ? (
+              <p className="text-[11px] text-accent">针对：{res.closesGap}</p>
+            ) : null}
+            <p className="text-muted">学完后：{res.finishCriteria || res.note}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

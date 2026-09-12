@@ -1,6 +1,6 @@
 import { textLooksThin } from "./match";
 import { getRoleMeta } from "./role-meta";
-import { ALIGN_RESOURCES, SEARCH_RESOURCES, getRoleResources, getSkillResources } from "./resources";
+import { ALIGN_RESOURCES, SEARCH_RESOURCES, resourcesForGap } from "./resources";
 import type {
   CredibilityNote,
   GapItem,
@@ -68,7 +68,7 @@ export function buildCredibility(
   };
 }
 
-function pickResources(all: ResourceRef[], count = 4): ResourceRef[] {
+function pickResources(all: ResourceRef[], count = 3): ResourceRef[] {
   const seen = new Set<string>();
   const out: ResourceRef[] = [];
   for (const item of all) {
@@ -80,12 +80,6 @@ function pickResources(all: ResourceRef[], count = 4): ResourceRef[] {
   return out;
 }
 
-function resourcesForSkill(skillId: string | undefined, roleId: string): ResourceRef[] {
-  const specific = getSkillResources(skillId);
-  if (specific.length >= 2) return specific.slice(0, 4);
-  return pickResources([...specific, ...getRoleResources(roleId)], 4);
-}
-
 function foundationAction(
   title: string,
   learnHint: string,
@@ -93,19 +87,21 @@ function foundationAction(
   weeks: number,
   resources: ResourceRef[],
   thin: boolean,
+  targetGap: string,
 ): PlanAction {
   return {
     title,
     detail: learnHint,
     weeklyTasks: [
-      `第 1 周：打开下列 https 链接，按文档完成标明的章节，用自己的话写下「适用边界」与「我还不会什么」。${thin ? "若你其实已会，先做一次自测再决定是否跳过。" : ""}`,
+      `第 1 周：只打开下列针对「${targetGap}」的深链，完成标明的章节，用自己的话写下「适用边界」与「我还不会什么」。${thin ? "若你其实已会，先做一次自测再决定是否跳过。" : ""}`,
       "第 2 周：完成一个最小可运行练习，不复制完整教程仓库；提交要能看出是你写的。",
-      `第 3${weeks > 3 ? "–4" : ""} 周：做出交付物，并写 10 行以内的验收说明（如何启动、如何证明它做对了）。`,
+      `第 3${weeks > 3 ? "–4" : ""} 周：做出交付物，并按每条资源的「学完后」标准自检。`,
     ].filter(Boolean),
     deliverable,
     acceptance: "他人按 README 能启动；你能在 10 分钟内讲清取舍与失败路径。没有数据就标明小样本。",
     weeks,
-    resources,
+    targetGap,
+    resources: resources.slice(0, 3),
   };
 }
 
@@ -134,20 +130,23 @@ export function buildPhases(
       skill?.learnHint ?? gap.advice,
       skill?.deliverable ?? "最小可运行作业 + 边界笔记",
       gap.severity === "critical" ? 4 : 3,
-      resourcesForSkill(skill?.id, role.id),
+      resourcesForGap(gap.title, skill?.id),
       thin,
+      gap.title,
     );
   });
 
   if (foundationActions.length === 0) {
+    const firstSkill = role.skills.find((s) => s.level === "must") ?? role.skills[0];
     foundationActions.push(
       foundationAction(
         "把已对齐技能做成可深挖叙事",
         "关键词已能对上常见 JD。本阶段不再堆名词，而是补一次可量化的优化/排障，以及该岗位面试高频原理。",
         "一份「生产或项目中的取舍」笔记，覆盖该岗位 3 个高频面试点，并指向仓库里的具体提交。",
         4,
-        pickResources(getRoleResources(role.id), 4),
+        firstSkill ? resourcesForGap(firstSkill.name, firstSkill.id) : [],
         thin,
+        firstSkill?.name ?? role.name,
       ),
     );
   }
@@ -161,6 +160,10 @@ export function buildPhases(
   const extraProject = role.projectTemplates[1];
   const phase2Months = monthsPair((project.months[0] ?? 2) + (projectGap ? 1 : 0) + (thin ? 1 : 0), 2);
 
+  const projectFocusGap = missingMust[0] ?? missingShould[0];
+  const projectFocusSkill = projectFocusGap ? skillByName.get(projectFocusGap.title) : undefined;
+  const projectTarget = projectFocusGap?.title ?? role.projectTemplates[0]?.title ?? role.name;
+
   const projectActions: PlanAction[] = [
     {
       title: project.title,
@@ -173,17 +176,16 @@ export function buildPhases(
       deliverable: project.evidence,
       acceptance: meta.evidenceChecklist.slice(0, 3).join("；"),
       weeks: project.months[1] * 4,
-      resources: pickResources(
-        [...missingMust, ...missingShould]
-          .slice(0, 3)
-          .flatMap((gap) => getSkillResources(skillByName.get(gap.title)?.id))
-          .concat(getRoleResources(role.id)),
-        4,
-      ),
+      targetGap: projectTarget,
+      resources: projectFocusGap
+        ? resourcesForGap(projectFocusGap.title, projectFocusSkill?.id)
+        : resourcesForGap(projectTarget, role.skills.find((s) => s.level === "must")?.id),
     },
   ];
 
   if (extraProject && (projectGap || thin)) {
+    const secondGap = missingMust[1] ?? missingShould[0] ?? projectFocusGap;
+    const secondSkill = secondGap ? skillByName.get(secondGap.title) : undefined;
     projectActions.push({
       title: extraProject.title,
       detail: extraProject.detail,
@@ -194,7 +196,8 @@ export function buildPhases(
       deliverable: extraProject.evidence,
       acceptance: extraProject.evidence,
       weeks: extraProject.months[0] * 4,
-      resources: pickResources(getRoleResources(role.id), 3),
+      targetGap: secondGap?.title ?? extraProject.title,
+      resources: secondGap ? resourcesForGap(secondGap.title, secondSkill?.id) : [],
     });
   } else {
     projectActions.push({
@@ -207,6 +210,7 @@ export function buildPhases(
       deliverable: "项目一页纸 + README 中的架构与取舍。",
       acceptance: "不看你演示、只看 README 也能复现启动；口述不依赖「当时环境在我电脑上」。",
       weeks: 2,
+      targetGap: "项目叙事与仓库表达",
       resources: ALIGN_RESOURCES.slice(0, 2),
     });
   }
@@ -236,10 +240,7 @@ export function buildPhases(
       ],
       whyConservative: `按每周 8–12 小时，一项从相邻栈迁移的硬技能通常要 3–6 周才能做出可演示作业；从零或跨度大再加缓冲。区间 ${phase1Months[0]}–${phase1Months[1]} 个月包含返工，不按连续脱产计算。`,
       industryPrecedent: meta.transferPattern,
-      resources: pickResources(
-        foundationActions.flatMap((action) => action.resources).concat(getRoleResources(role.id)),
-        4,
-      ),
+      resources: pickResources(foundationActions.flatMap((action) => action.resources), 3),
     },
     {
       id: "projects",
@@ -252,7 +253,7 @@ export function buildPhases(
       whyConservative: `可演示项目从范围冻结到 README/复盘，在职通常跨 2 个以上迭代。区间已计入「做完主路径后还要补失败案例」的时间，这是面试最常暴露的缺口。`,
       industryPrecedent:
         "中高级 JD 与面试普遍在找「你独立负责过什么」。开源仓库、可访问 Demo、复盘笔记是不依赖某一雇主背书的可携带证据；作品集惯例来自开源社区与工程招聘的通行做法，而非某家公司内部模板。",
-      resources: pickResources(projectActions.flatMap((action) => action.resources), 4),
+      resources: pickResources(projectActions.flatMap((action) => action.resources), 3),
     },
     {
       id: "align",
@@ -271,7 +272,8 @@ export function buildPhases(
           deliverable: "1 页中文简历；如投跨境团队再补英文要点。",
           acceptance: "未参与过你项目的人能指出你独立负责的边界。",
           weeks: 2,
-          resources: ALIGN_RESOURCES.slice(0, 3),
+          targetGap: "简历与仓库表达",
+          resources: ALIGN_RESOURCES.slice(0, 2),
         },
         {
           title: "按该岗高频问题做口语化准备",
@@ -283,7 +285,8 @@ export function buildPhases(
           deliverable: "8–12 题口述提纲（不背稿）。",
           acceptance: "被追问「为什么不选另一方案」时，能说出约束而不是背定义。",
           weeks: 3,
-          resources: pickResources([...getRoleResources(role.id), ...ALIGN_RESOURCES], 3),
+          targetGap: "面试深挖表达",
+          resources: ALIGN_RESOURCES.slice(0, 2),
         },
         {
           title: "用公开在招 JD 做对照",
@@ -295,7 +298,8 @@ export function buildPhases(
           deliverable: "「JD 词频（粗）vs 我的证据」对照表。",
           acceptance: "表中每一行能链到仓库、文档或「明确缺失」。",
           weeks: 2,
-          resources: ALIGN_RESOURCES,
+          targetGap: "真实 JD 对照",
+          resources: ALIGN_RESOURCES.slice(0, 2),
         },
       ],
       acceptance: ["简历与仓库 Title 一致", "有一份基于真实公开 JD 的对照表", "高频面试题能落到证据"],
@@ -321,7 +325,8 @@ export function buildPhases(
           deliverable: "岗位分级表（匹配 / 可迁移 / 跨度大）+ 每周复盘。",
           acceptance: "能说出本周为什么投这些、下一周补哪一条证据。",
           weeks: 6,
-          resources: SEARCH_RESOURCES,
+          targetGap: "求职验证样本",
+          resources: SEARCH_RESOURCES.slice(0, 3),
         },
         {
           title: "把面试当数据",
@@ -333,7 +338,8 @@ export function buildPhases(
           deliverable: "面试日志。",
           acceptance: "日志能映射到仓库或文档的一次实际补充。",
           weeks: 4,
-          resources: pickResources([...SEARCH_RESOURCES, ...getRoleResources(role.id)], 3),
+          targetGap: "面试反馈回写",
+          resources: SEARCH_RESOURCES.slice(0, 2),
         },
       ],
       acceptance: ["有分层样本而不是只投一家", "失败有回写到证据清单"],

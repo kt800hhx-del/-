@@ -158,8 +158,8 @@ export function PlanStep({
                       </p>
                       {action.resources.length ? (
                         <div className="mt-3">
-                          <p className="label">可打开的学习资源（补本条缺口）</p>
-                          <ResourceList resources={action.resources} />
+                          <p className="label">针对本条缺口的深链（2–3 条）</p>
+                          <ResourceList resources={action.resources} targetGap={action.targetGap} />
                         </div>
                       ) : null}
                     </div>

@@ -22,8 +22,8 @@ const skillKeys = new Set();
 for (const [, key, body] of skillBlocks) {
   const count = (body.match(/https:\/\//g) ?? []).length;
   skillKeys.add(key);
-  if (count < 2 || count > 4) {
-    console.error(`skill ${key} has ${count} urls (need 2–4)`);
+  if (count < 2 || count > 3) {
+    console.error(`skill ${key} has ${count} urls (need 2–3 deep links)`);
     process.exitCode = 1;
   }
 }
@@ -77,4 +77,4 @@ if (bad.length) {
   console.error(`\n${bad.length}/${urls.length} URLs failed`);
   process.exit(1);
 }
-console.log(`\n${urls.length} URLs returned 2xx/3xx; ${skillIds.length} skills have 2–4 resources.`);
+console.log(`\n${urls.length} URLs returned 2xx/3xx; ${skillIds.length} skills have 2–3 deep links.`);

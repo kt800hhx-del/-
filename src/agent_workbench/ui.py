@@ -11,11 +11,12 @@ from agent_workbench.multi_agent import MultiAgentOrchestrator
 from agent_workbench.trace import TraceLogger
 
 DEMO_PROMPTS = [
-    "Calculate 12 * 7 + 3",
-    "What time is it now?",
-    "Read sandbox file welcome.txt and summarize it",
+    "你是谁",
+    "计算 12 * 7 + 3",
+    "现在几点？",
+    "读一下 sandbox 里的 faq.md 并总结",
     "From company.json, what is metrics.tool_success_rate?",
-    "Remember a note key=interview value=Agent Workbench demo",
+    "记住笔记 key=interview value=Agent Workbench demo",
 ]
 
 

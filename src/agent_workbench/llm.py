@@ -97,6 +97,15 @@ class MockLLM:
             return out
         return "Thought: I have enough information.\nFinal Answer: Done."
 
+
+    def _safe_eval(self, expr: str) -> str:
+        try:
+            allowed = {"__builtins__": {}}
+            val = eval(expr, allowed, {})  # noqa: S307 — mock-only arithmetic
+            return str(val)
+        except Exception:
+            return "(see calculator observation)"
+
     def _plan(self, question: str, prompt_ctx: str) -> list[str]:
         q = question.lower()
         steps: list[str] = []
@@ -112,7 +121,7 @@ class MockLLM:
             )
             steps.append(
                 "Thought: I have the numeric result.\n"
-                f"Final Answer: The result of {expr} is available from the calculator observation above."
+                f"Final Answer: {expr} = {self._safe_eval(expr)}"
             )
             return steps
 
@@ -191,19 +200,55 @@ class MockLLM:
             )
             return steps
 
-        # Default: datetime then answer
+        # Identity / intro (common chat probes in interviews & demos)
+        identity_keys = (
+            "who are you", "what are you", "your name", "introduce",
+            "你是谁", "你是谁？", "介绍一下你", "你叫什么", "做什么的",
+        )
+        if any(k in q for k in identity_keys) or any(k in question for k in ("你是谁", "介绍一下你", "你叫什么")):
+            steps.append(
+                "Thought: This is an identity question; answer directly without tools.\n"
+                "Final Answer: 我是 **Agent Workbench**（智能体工作台）——一个面向面试演示的 ReAct 智能体。"
+                "我会按「思考 → 调用工具 → 观察结果 → 回答」工作，内置计算器、读沙箱文件、查时间、记笔记、HTTP 拉取、JSON 查询等工具。"
+                "当前是 **Mock 模式**（规则引擎模拟大模型），适合离线演示工具链路；接上 `OPENAI_API_KEY` 后可切换真实推理。"
+                "你可以试试：`计算 12*7+3`、`现在几点`、`读一下 faq.md`。"
+            )
+            return steps
+
+        greet_keys = ("hello", "hi", "hey", "nihao", "你好", "您好", "嗨", "在吗")
+        if any(k in q for k in greet_keys) or any(k in question for k in ("你好", "您好", "嗨", "在吗")):
+            steps.append(
+                "Thought: Greeting — reply warmly and point to demo capabilities.\n"
+                "Final Answer: 你好！我是 Agent Workbench。当前 Mock 模式可演示工具调用；"
+                "试试侧边栏示例，或直接问我：`计算 15+27`、`现在几点`、`你是谁`、`读 welcome.txt`。"
+                "若要更自然的对话推理，请配置真实 LLM（`OPENAI_API_KEY`）并关闭 Mock。"
+            )
+            return steps
+
+        # Capability / help
+        if any(k in q for k in ("help", "能做什么", "你会什么", "功能", "怎么用", "what can you")) or "能做什么" in question:
+            steps.append(
+                "Thought: Explain capabilities clearly for the demo.\n"
+                "Final Answer: 我能做：① 计算表达式 ② 读 `sandbox_data` 文件 ③ 查当前时间 "
+                "④ 读写长期笔记 ⑤ 拉取网页 ⑥ 查询 JSON。也支持多角色模式（Planner→Worker→Critic）。"
+                "每一步都会留下 JSONL 轨迹。Mock 下用规则选工具；接真实 API 后推理会更丰富。"
+            )
+            return steps
+
+        # Default: still show one tool call, then a helpful bilingual answer
         steps.append(
-            "Thought: I'll check the time as a simple demo action.\n"
+            "Thought: No specialized intent matched; check the time as a lightweight demo tool call.\n"
             "Action: datetime_now\n"
             "Action Input: {}"
         )
         steps.append(
-            f"Thought: Ready to answer.\n"
-            f"Final Answer: (mock) You asked: {question}. Enable a real LLM via OPENAI_API_KEY for richer reasoning."
+            "Thought: Answer helpfully in mock mode.\n"
+            f"Final Answer: （Mock）我收到了：「{question}」。"
+            "我已调用 `datetime_now` 做过一次工具演示（见轨迹）。"
+            "若问题涉及计算/读文件/记笔记，请直接说具体任务，例如「计算 9*9」或「读 faq.md」。"
+            "更自由的闲聊与复杂推理请关闭 Mock，并设置 `OPENAI_API_KEY`。"
         )
         return steps
-
-
 def build_llm(*, mock: bool | None = None) -> LLMClient:
     """Factory: mock wins when AGENT_WB_MOCK=1 or mock=True."""
     if mock is None:

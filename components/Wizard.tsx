@@ -7,23 +7,44 @@ import { RequirementsStep } from "@/components/steps/RequirementsStep";
 import { TargetRoleStep } from "@/components/steps/TargetRoleStep";
 import { buildAnalysis } from "@/lib/engine";
 import { suggestRoles } from "@/lib/suggest";
-import { clearState, getServerSnapshot, getSnapshot, saveState, subscribeState } from "@/lib/storage";
-import { STEP_LABELS, type UserBackground } from "@/lib/types";
-import { useMemo, useSyncExternalStore } from "react";
+import { DEFAULT_STATE, clearState, getSnapshot, saveState, subscribeState } from "@/lib/storage";
+import { STEP_LABELS, type PersistedState, type UserBackground } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "./ui";
 
 export function Wizard() {
-  const persisted = useSyncExternalStore(subscribeState, getSnapshot, getServerSnapshot);
+  const [persisted, setPersisted] = useState<PersistedState>(DEFAULT_STATE);
+
+  useEffect(() => {
+    const sync = () => setPersisted(getSnapshot());
+    const unsubscribe = subscribeState(sync);
+    const timer = window.setTimeout(sync, 0);
+    return () => {
+      window.clearTimeout(timer);
+      unsubscribe();
+    };
+  }, []);
+
   const step = persisted.step;
   const background = persisted.background;
   const selectedRoleId = persisted.selectedRoleId;
+
+  const commit = (next: PersistedState) => {
+    saveState({
+      step: next.step,
+      background: next.background,
+      selectedRoleId: next.selectedRoleId,
+    });
+    setPersisted(getSnapshot());
+  };
 
   const update = (partial: {
     step?: number;
     background?: UserBackground;
     selectedRoleId?: string | null;
   }) => {
-    saveState({
+    commit({
+      ...persisted,
       step: partial.step ?? step,
       background: partial.background ?? background,
       selectedRoleId: partial.selectedRoleId === undefined ? selectedRoleId : partial.selectedRoleId,
@@ -36,14 +57,24 @@ export function Wizard() {
     [background, selectedRoleId],
   );
 
-  const canNext = step === 0 ? true : step === 1 ? Boolean(selectedRoleId) : Boolean(analysis);
+  const fallbackRoleId = selectedRoleId ?? suggestions[0]?.roleId ?? null;
+  const canNext = step === 0 ? true : step === 1 ? Boolean(fallbackRoleId) : Boolean(analysis || fallbackRoleId);
 
   const goNext = () => {
-    const nextRole = selectedRoleId ?? suggestions[0]?.roleId ?? null;
-    update({
-      step: Math.min(step + 1, 4),
-      selectedRoleId: nextRole,
-    });
+    if (step === 0) {
+      update({
+        step: 1,
+        selectedRoleId: fallbackRoleId,
+      });
+      return;
+    }
+    if (step === 1) {
+      const roleId = selectedRoleId ?? suggestions[0]?.roleId ?? null;
+      if (!roleId) return;
+      update({ step: 2, selectedRoleId: roleId });
+      return;
+    }
+    update({ step: Math.min(step + 1, 4) });
   };
 
   return (
@@ -57,8 +88,11 @@ export function Wizard() {
               <button
                 type="button"
                 onClick={() => {
-                  if (index > 1 && !selectedRoleId) return;
-                  update({ step: index });
+                  if (index > 1 && !selectedRoleId && !suggestions[0]?.roleId) return;
+                  update({
+                    step: index,
+                    selectedRoleId: index > 1 ? fallbackRoleId : selectedRoleId,
+                  });
                 }}
                 className={`flex w-full items-center gap-2 border-r border-line px-3 py-2.5 text-left last:border-r-0 ${
                   active ? "bg-accent text-white" : done ? "bg-accent-soft text-accent" : "bg-card text-muted"
@@ -95,20 +129,23 @@ export function Wizard() {
           background={background}
           analysis={analysis}
           onChangeRole={() => update({ step: 1 })}
-          onReset={() => clearState()}
+          onReset={() => {
+            clearState();
+            setPersisted(getSnapshot());
+          }}
         />
       ) : null}
       {step === 4 && !analysis ? <EmptyState text="尚未生成报告。" /> : null}
 
       {step < 4 ? (
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-card/95 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-card/95 backdrop-blur">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
             <Button type="button" variant="ghost" disabled={step === 0} onClick={() => update({ step: step - 1 })}>
               上一步
             </Button>
             <p className="hidden text-[11px] text-muted md:block">进度保存在本机浏览器。刷新不会丢失。</p>
             <Button type="button" onClick={goNext} disabled={!canNext}>
-              {step === 1 && !selectedRoleId ? "请先选择岗位" : "继续"}
+              继续
             </Button>
           </div>
         </div>

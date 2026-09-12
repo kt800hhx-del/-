@@ -10,10 +10,8 @@ export const DEFAULT_STATE: PersistedState = {
 };
 
 const listeners = new Set<() => void>();
-let cache: { raw: string | null; value: PersistedState } = {
-  raw: "__uninitialized__",
-  value: DEFAULT_STATE,
-};
+let memoryState: PersistedState = DEFAULT_STATE;
+let hydrated = false;
 
 function parse(raw: string | null): PersistedState {
   if (!raw) return DEFAULT_STATE;
@@ -41,11 +39,15 @@ function readRaw(): string | null {
   }
 }
 
+function hydrateFromStorage() {
+  if (hydrated) return;
+  memoryState = parse(readRaw());
+  hydrated = true;
+}
+
 export function getSnapshot(): PersistedState {
-  const raw = readRaw();
-  if (raw === cache.raw) return cache.value;
-  cache = { raw, value: parse(raw) };
-  return cache.value;
+  hydrateFromStorage();
+  return memoryState;
 }
 
 export function getServerSnapshot(): PersistedState {
@@ -54,13 +56,21 @@ export function getServerSnapshot(): PersistedState {
 
 export function subscribeState(listener: () => void) {
   listeners.add(listener);
+  const onStorage = () => {
+    try {
+      memoryState = parse(readRaw());
+    } catch {
+      /* keep memoryState */
+    }
+    listener();
+  };
   if (typeof window !== "undefined") {
-    window.addEventListener("storage", listener);
+    window.addEventListener("storage", onStorage);
   }
   return () => {
     listeners.delete(listener);
     if (typeof window !== "undefined") {
-      window.removeEventListener("storage", listener);
+      window.removeEventListener("storage", onStorage);
     }
   };
 }
@@ -70,22 +80,33 @@ function emit() {
 }
 
 export function saveState(state: Omit<PersistedState, "version" | "updatedAt">) {
-  if (typeof window === "undefined") return;
   const payload: PersistedState = {
     version: 1,
     updatedAt: new Date().toISOString(),
     ...state,
   };
-  const raw = JSON.stringify(payload);
-  window.localStorage.setItem(STORAGE_KEY, raw);
-  cache = { raw, value: payload };
+  memoryState = payload;
+  hydrated = true;
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // Private mode, quota, or policy: keep in-memory navigation working.
+    }
+  }
   emit();
 }
 
 export function clearState() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(STORAGE_KEY);
-  cache = { raw: null, value: DEFAULT_STATE };
+  memoryState = DEFAULT_STATE;
+  hydrated = true;
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
   emit();
 }
 

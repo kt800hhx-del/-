@@ -3,6 +3,7 @@
 import { CITIES, COMMON_STACK, EDUCATION_OPTIONS, INTERESTS, SAMPLE_BACKGROUND } from "@/lib/constants";
 import { extractSkillsFromText, uniqueNormalized } from "@/lib/match";
 import type { UserBackground } from "@/lib/types";
+import { ResumeUpload } from "../ResumeUpload";
 import { Button, Chip, Field, SectionTitle, Select, TextArea, TextInput } from "../ui";
 
 export function BackgroundStep({
@@ -171,7 +172,8 @@ export function BackgroundStep({
             onChange={(e) => patch({ projectNotes: e.target.value })}
           />
         </Field>
-        <Field label="简历原文" hint="v1 不做 PDF 解析。技能识别与项目证据会扫描这段文字。">
+        <ResumeUpload background={background} onChange={onChange} />
+        <Field label="简历原文" hint="上传或粘贴都可以。技能识别与项目证据会扫描这段文字。">
           <TextArea
             rows={8}
             value={background.resumeText}

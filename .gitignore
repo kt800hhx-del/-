@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# copied from pdfjs-dist on install/build
+/public/pdf.worker.min.mjs
+
 # next.js
 /.next/
 /out/

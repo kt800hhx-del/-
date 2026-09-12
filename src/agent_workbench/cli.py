@@ -12,6 +12,17 @@ import json
 import sys
 
 
+
+def _safe_print(*args, **kwargs):
+    """Windows consoles may be GBK; avoid UnicodeEncodeError on ¥ etc."""
+    try:
+        print(*args, **kwargs)
+    except UnicodeEncodeError:
+        text = " ".join(str(a) for a in args)
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(text.encode(enc, errors="replace").decode(enc, errors="replace"), **{k: v for k, v in kwargs.items() if k != "file"})
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Agent Workbench — ReAct + Travel Planning")
     sub = p.add_subparsers(dest="command")
@@ -77,12 +88,12 @@ def _run_travel(args: argparse.Namespace) -> int:
             )
         )
     else:
-        print("=== STAGES ===")
+        _safe_print("=== STAGES ===")
         for s in result.stages:
-            print(f"[{s.stage}] {s.message}")
-        print("\n=== ITINERARY (Markdown) ===\n")
-        print(result.markdown)
-        print(f"\n(trace: {result.trace_path})")
+            _safe_print(f"[{s.stage}] {s.message}")
+        _safe_print("\n=== ITINERARY (Markdown) ===\n")
+        _safe_print(result.markdown)
+        _safe_print(f"\n(trace: {result.trace_path})")
     return 0
 
 
@@ -151,11 +162,16 @@ def _run_react(args: argparse.Namespace) -> int:
             print(json.dumps(s, ensure_ascii=False))
         print("\n=== FINAL ANSWER ===")
         print(result.answer)
-        print(f"\n(trace: {result.trace_path})")
+        _safe_print(f"\n(trace: {result.trace_path})")
     return 0
 
 
 def main(argv: list[str] | None = None) -> int:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     argv = list(sys.argv[1:] if argv is None else argv)
     # If first token is travel, use travel subcommand path via parse_known / dedicated parse
     if argv and argv[0] == "travel":

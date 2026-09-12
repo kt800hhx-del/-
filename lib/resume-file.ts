@@ -69,6 +69,26 @@ function normalizeExtracted(text: string): string {
   return text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
+function textContentToString(items: unknown[]): string {
+  let lastY: number | null = null;
+  const parts: string[] = [];
+  for (const item of items) {
+    if (!item || typeof item !== "object" || !("str" in item)) continue;
+    const str = String((item as { str: string }).str);
+    if (!str) continue;
+    const transform = "transform" in item ? (item as { transform?: number[] }).transform : undefined;
+    const y = transform && transform.length >= 6 ? transform[5] : null;
+    if (lastY !== null && y !== null && Math.abs(y - lastY) > 2) {
+      parts.push("\n");
+    } else if (parts.length && !/\s$/.test(parts[parts.length - 1]) && !/^\s/.test(str)) {
+      parts.push(" ");
+    }
+    parts.push(str);
+    if (y !== null) lastY = y;
+  }
+  return parts.join("").replace(/[ \t]+\n/g, "\n").trim();
+}
+
 async function parsePdf(data: ArrayBuffer): Promise<string> {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = `${window.location.origin}/pdf.worker.min.mjs`;
@@ -78,11 +98,7 @@ async function parsePdf(data: ArrayBuffer): Promise<string> {
   for (let i = 1; i <= pdf.numPages; i += 1) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    const line = content.items
-      .map((item) => ("str" in item ? item.str : ""))
-      .join(" ")
-      .replace(/[ ]{2,}/g, " ")
-      .trim();
+    const line = textContentToString(content.items);
     if (line) pages.push(line);
   }
   return pages.join("\n\n");

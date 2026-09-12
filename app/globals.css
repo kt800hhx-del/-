@@ -1,18 +1,24 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-paper: #f3eee4;
-  --color-ink: #1b2430;
-  --color-muted: #5c676f;
-  --color-celadon: #1b6b66;
-  --color-celadon-deep: #134e4a;
-  --color-clay: #c24d1f;
-  --color-card: #fffdf8;
-  --color-line: #d8cfc0;
-  --color-sage: #6d7a78;
-  --color-ok: #2f6d4f;
-  --color-warn: #9a670d;
-  --color-danger: #9f2d1f;
+  --color-canvas: #f3f2ee;
+  --color-ink: #14161c;
+  --color-muted: #5c616b;
+  --color-card: #ffffff;
+  --color-line: #d9d6cf;
+  --color-hair: #eceae4;
+  --color-accent: #1b3130;
+  --color-accent-soft: #e4ece9;
+  --color-ok: #1e5a44;
+  --color-ok-soft: #e5f1ea;
+  --color-warn: #8a5808;
+  --color-warn-soft: #f6eedc;
+  --color-danger: #8f2d22;
+  --color-danger-soft: #f6e6e3;
+  --color-paper: #f3f2ee;
+  --color-celadon: #1b3130;
+  --color-celadon-deep: #122422;
+  --color-sage: #5c616b;
   --font-sans: var(--font-noto-sans);
   --font-serif: var(--font-noto-serif);
 }
@@ -22,18 +28,14 @@ html {
 }
 
 body {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-noto-sans), "Noto Sans SC", "PingFang SC", sans-serif;
-  background-image:
-    radial-gradient(900px 420px at 8% -10%, rgba(27, 107, 102, 0.09), transparent 55%),
-    radial-gradient(720px 360px at 100% 0%, rgba(194, 77, 31, 0.07), transparent 50%),
-    linear-gradient(180deg, rgba(255, 253, 248, 0.35), transparent 220px);
   min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-noto-sans), "Noto Sans SC", "PingFang SC", "Source Han Sans SC", sans-serif;
 }
 
 ::selection {
-  background: rgba(27, 107, 102, 0.18);
+  background: #d7e2de;
 }
 
 input,
@@ -42,10 +44,16 @@ select {
   font: inherit;
 }
 
-.paper-card {
+.report-shell {
   background: var(--color-card);
   border: 1px solid var(--color-line);
-  box-shadow: 0 1px 0 rgba(27, 36, 48, 0.03), 0 18px 40px -28px rgba(27, 36, 48, 0.35);
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--color-muted);
 }
 
 .step-rail::-webkit-scrollbar {

@@ -1,80 +1,81 @@
 "use client";
 
 import type { CareerAnalysis } from "@/lib/types";
-
-const LEVEL_LABEL = { must: "硬性 / 初筛常见", should: "中级高频", nice: "加分" };
-const CATEGORY_LABEL: Record<string, string> = {
-  language: "语言",
-  framework: "框架",
-  infra: "基础设施",
-  domain: "领域",
-  tool: "工具",
-  soft: "协作",
-};
+import { BASIS_LABEL, CATEGORY_LABEL, LEVEL_LABEL } from "@/lib/types";
+import { SectionTitle } from "../ui";
 
 export function RequirementsStep({ analysis }: { analysis: CareerAnalysis }) {
   const { role, seniority } = analysis;
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-3">
-        <p className="text-xs tracking-[0.22em] text-celadon">第三步 · 对照市场</p>
-        <h2 className="font-serif text-3xl leading-tight">{role.name}的常见要求</h2>
-        <p className="max-w-2xl text-sm leading-7 text-muted">{role.summary}</p>
-      </header>
+    <div className="space-y-6">
+      <SectionTitle
+        kicker="03 / 市场对照"
+        title={`${role.name}的常见要求`}
+        desc={role.summary}
+      />
 
-      <div className="paper-card rounded-2xl p-5">
-        <p className="text-xs text-sage">按你的年限对照的常见职级称呼</p>
-        <p className="mt-1 font-serif text-xl">{role.typicalTitles[seniority]}</p>
-        <div className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-3">
-          <div>
-            <p className="text-xs text-sage">初级区间</p>
-            <p>{role.typicalTitles.junior}</p>
+      <section className="report-shell divide-y divide-hair">
+        <div className="grid gap-4 p-5 md:grid-cols-4 md:p-6">
+          <div className="md:col-span-2">
+            <p className="label">按你的年限对照</p>
+            <p className="mt-2 font-serif text-xl">{role.typicalTitles[seniority]}</p>
           </div>
           <div>
-            <p className="text-xs text-sage">中级区间</p>
-            <p>{role.typicalTitles.mid}</p>
+            <p className="label">初级</p>
+            <p className="mt-2 text-[13px] leading-5">{role.typicalTitles.junior}</p>
           </div>
           <div>
-            <p className="text-xs text-sage">高级区间</p>
-            <p>{role.typicalTitles.senior}</p>
+            <p className="label">中级 / 高级</p>
+            <p className="mt-2 text-[13px] leading-5">{role.typicalTitles.mid}</p>
+            <p className="mt-1 text-[13px] leading-5 text-muted">{role.typicalTitles.senior}</p>
           </div>
         </div>
-        <p className="mt-4 text-sm leading-6 text-muted">{role.educationNote}</p>
-      </div>
-
-      <section className="space-y-4">
-        {(["must", "should", "nice"] as const).map((level) => {
-          const skills = role.skills.filter((skill) => skill.level === level);
-          if (!skills.length) return null;
-          return (
-            <div key={level}>
-              <h3 className="mb-2 font-serif text-lg">{LEVEL_LABEL[level]}</h3>
-              <div className="space-y-3">
-                {skills.map((skill) => (
-                  <article key={skill.id} className="rounded-2xl border border-line bg-card p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h4 className="font-medium">{skill.name}</h4>
-                      <span className="text-xs text-sage">{CATEGORY_LABEL[skill.category] ?? skill.category}</span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-muted">{skill.jdPattern}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+        <p className="px-5 py-4 text-[13px] leading-6 text-muted md:px-6">{role.educationNote}</p>
       </section>
 
-      <section className="rounded-2xl border border-dashed border-line p-5">
-        <h3 className="font-serif text-lg">这些要求依据什么</h3>
-        <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
+      {(["must", "should", "nice"] as const).map((level) => {
+        const skills = role.skills.filter((skill) => skill.level === level);
+        if (!skills.length) return null;
+        return (
+          <section key={level} className="report-shell overflow-hidden">
+            <div className="flex items-center justify-between border-b border-hair px-5 py-3 md:px-6">
+              <h3 className="text-[13px] font-medium">{LEVEL_LABEL[level]}</h3>
+              <span className="text-[11px] text-muted">{skills.length} 项</span>
+            </div>
+            <div className="divide-y divide-hair">
+              {skills.map((skill) => (
+                <article key={skill.id} className="grid gap-3 px-5 py-4 md:grid-cols-12 md:px-6">
+                  <div className="md:col-span-4">
+                    <h4 className="text-[13px] font-medium leading-6">{skill.name}</h4>
+                    <p className="mt-1 text-[11px] text-muted">
+                      {CATEGORY_LABEL[skill.category]}
+                    </p>
+                  </div>
+                  <div className="md:col-span-3">
+                    <p className="label">依据类型</p>
+                    <p className="mt-1 text-[13px] leading-6">{BASIS_LABEL[skill.basisType]}</p>
+                  </div>
+                  <div className="md:col-span-5">
+                    <p className="label">为何常见于 JD</p>
+                    <p className="mt-1 text-[13px] leading-6 text-muted">{skill.jdPattern}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      <section className="report-shell p-5 md:p-6">
+        <p className="label">信息来源类型</p>
+        <ul className="mt-3 space-y-2 text-[13px] leading-6 text-muted">
           {role.sources.map((source) => (
             <li key={source}>· {source}</li>
           ))}
         </ul>
-        <p className="mt-3 text-xs leading-5 text-sage">
-          这里引用的是岗位描述的常见结构与公开工程实践，不是某家公司的实时招聘，也没有虚构统计数字。
+        <p className="mt-4 text-xs leading-5 text-muted">
+          以上是岗位描述的常见结构与公开工程实践，不是某家公司的实时招聘，也没有虚构统计。
         </p>
       </section>
     </div>

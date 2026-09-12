@@ -15,9 +15,9 @@ const notoSerif = Noto_Serif_SC({
 });
 
 export const metadata: Metadata = {
-  title: "职业规划砚台 · IT 个性化路径",
+  title: "职业规划报告 · IT 路径",
   description:
-    "固定方法论的 IT 职业规划工具：输入背景，得到目标岗位、行业常见要求、差距分析与可执行路径。",
+    "面向导师可出示的 IT 职业规划报告：岗位要求带依据类型，差距带证据，路径带周级任务与行业先例。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

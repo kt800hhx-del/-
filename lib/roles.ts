@@ -1,9 +1,19 @@
-import type { RoleProfile, SkillRequirement } from "./types";
+import type { BasisType, RoleProfile, SkillCategory, SkillLevel, SkillRequirement } from "./types";
+
+function inferBasis(level: SkillLevel, category: SkillCategory): BasisType {
+  if (level === "nice") return "portfolio";
+  if (category === "domain" || category === "soft") return "campus-social";
+  if (level === "should" && (category === "tool" || category === "infra")) return "eng-practice";
+  return "jd-high-freq";
+}
 
 function skill(
-  partial: SkillRequirement,
+  partial: Omit<SkillRequirement, "basisType"> & { basisType?: BasisType },
 ): SkillRequirement {
-  return partial;
+  return {
+    ...partial,
+    basisType: partial.basisType ?? inferBasis(partial.level, partial.category),
+  };
 }
 
 export const ROLES: RoleProfile[] = [

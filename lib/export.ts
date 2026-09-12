@@ -1,78 +1,128 @@
 import { educationLabel } from "./constants";
 import type { CareerAnalysis, UserBackground } from "./types";
+import { BASIS_LABEL, LEVEL_LABEL, SEVERITY_LABEL } from "./types";
 
-const SEVERITY: Record<string, string> = {
-  critical: "关键缺口",
-  moderate: "需要补齐",
-  minor: "加分缺口",
-  met: "已具备",
-};
-
-const FIT: Record<string, string> = {
+export const FIT: Record<string, string> = {
   strong: "较匹配",
   transferable: "可迁移",
   stretch: "跨度较大",
   unknown: "信息不足",
 };
 
+export const SEVERITY = SEVERITY_LABEL;
+
 export function planToMarkdown(background: UserBackground, analysis: CareerAnalysis): string {
-  const { role, gaps, phases, assumptions, matchScore, seniority, totalMonths } = analysis;
+  const { role, gaps, phases, matchScore, seniority, totalMonths, credibility, evidenceChecklist, antiPatterns, transferPattern, thinBackground } = analysis;
   const today = new Date().toISOString().slice(0, 10);
+  const tone = thinBackground ? "（输入偏薄，下列判断请先核实）" : "";
 
   const skillLines = gaps
     .filter((gap) => gap.type === "skill")
-    .map((gap) => `- **${gap.title}**（${SEVERITY[gap.severity]}）：${gap.current}。建议：${gap.advice}`)
+    .map((gap) => {
+      const ev = gap.evidenceNeeded.map((item) => `    - ${item}`).join("\n");
+      return `- **${gap.title}**（${SEVERITY_LABEL[gap.severity]} / ${gap.certainty === "assumed" ? "待核实" : "基于已填信息"}）
+  - 当前：${gap.current}
+  - 岗位侧：${gap.required}
+  - 为何影响招聘：${gap.hiringWhy}
+  - 需要的证据：
+${ev}`;
+    })
     .join("\n");
 
   const otherGaps = gaps
     .filter((gap) => gap.type !== "skill")
-    .map((gap) => `- **${gap.title}**（${SEVERITY[gap.severity]}）\n  - 当前：${gap.current}\n  - 目标侧：${gap.required}\n  - 建议：${gap.advice}`)
+    .map((gap) => {
+      const ev = gap.evidenceNeeded.map((item) => `    - ${item}`).join("\n");
+      return `- **${gap.title}**（${SEVERITY_LABEL[gap.severity]}）
+  - 当前：${gap.current}
+  - 目标侧：${gap.required}
+  - 为何影响招聘：${gap.hiringWhy}
+  - 需要的证据：
+${ev}`;
+    })
     .join("\n");
 
-  const reqMust = role.skills
-    .filter((s) => s.level === "must")
-    .map((s) => `- **${s.name}**：${s.jdPattern}`)
-    .join("\n");
-  const reqShould = role.skills
-    .filter((s) => s.level === "should")
-    .map((s) => `- **${s.name}**：${s.jdPattern}`)
-    .join("\n");
+  const reqBlock = (["must", "should", "nice"] as const)
+    .map((level) => {
+      const skills = role.skills.filter((s) => s.level === level);
+      if (!skills.length) return "";
+      return `### ${LEVEL_LABEL[level]}
+
+${skills
+  .map(
+    (s) => `- **${s.name}**
+  - 依据类型：${BASIS_LABEL[s.basisType]}
+  - 说明：${s.jdPattern}
+  - 示例交付：${s.deliverable}`,
+  )
+  .join("\n")}`;
+    })
+    .filter(Boolean)
+    .join("\n\n");
 
   const phaseMd = phases
     .map((phase, index) => {
       const actions = phase.actions
-        .map(
-          (action) =>
-            `  ${phase.actions.indexOf(action) + 1}. **${action.title}**（约 ${action.weeks} 周）\n     - ${action.detail}\n     - 交付物：${action.deliverable}`,
-        )
+        .map((action, i) => {
+          const tasks = action.weeklyTasks.map((t) => `       - ${t}`).join("\n");
+          const res = action.resources
+            .map((r) => `       - ${r.name}（${r.kind}，示例）${r.note ? `：${r.note}` : ""}`)
+            .join("\n");
+          return `  ${i + 1}. **${action.title}**（约 ${action.weeks} 周）
+     - ${action.detail}
+     - 周级任务：
+${tasks}
+     - 交付物：${action.deliverable}
+     - 验收：${action.acceptance}${res ? `\n     - 资源：\n${res}` : ""}`;
+        })
+        .join("\n");
+      const acc = phase.acceptance.map((item) => `- ${item}`).join("\n");
+      const res = phase.resources
+        .map((r) => `- ${r.name}（${r.kind}，示例）：${r.note}`)
         .join("\n");
       return `### 阶段 ${index + 1}：${phase.name}（约 ${phase.durationMonths[0]}–${phase.durationMonths[1]} 个月）
 
-目标：${phase.goal}
+**目标能力：** ${phase.targetAbility}
+
+${phase.goal}
 
 ${actions}
 
-**为何这一步说得通：** ${phase.verification}`;
+**阶段验收：**
+${acc}
+
+**时长为何偏保守：** ${phase.whyConservative}
+
+**行业先例 / 验证说明：** ${phase.industryPrecedent}
+
+**参考资源类型（示例，均公开存在）：**
+${res || "（本阶段以你自己的 JD 对照与口述练习为主）"}`;
     })
     .join("\n\n");
 
-  return `# IT 职业规划：${role.name}
+  return `# IT 职业规划报告：${role.name}${tone}
 
 > 生成日期：${today}  
-> 工具：职业规划砚台（方法论固定，简历/背景只作为输入）  
-> 技能匹配度（基于已识别技能）：${matchScore}%  
-> 按年限对照的常见职级称呼：${role.typicalTitles[seniority]}  
-> 保守总周期：约 **${totalMonths[0]}–${totalMonths[1]} 个月**
+> 工具：职业规划报告（方法论固定，背景只作输入）  
+> 技能清单重合（关键词识别，**不是录用概率**）：${matchScore}%  
+> 年限对照职级：${role.typicalTitles[seniority]}  
+> 保守总周期：约 **${totalMonths[0]}–${totalMonths[1]} 个月**（每周 8–12 小时）
 
-## 使用边界
+## 可信度说明
 
-- 岗位要求来自国内招聘平台（BOSS 直聘、拉勾、猎聘）与 LinkedIn / Indeed 同类 JD 的**常见结构**，以及公开工程实践，**不是**某家公司的实时招聘数据。
-- 本文件不包含虚构公司名、虚构薪资统计或虚构「通过率」。
-- 时间按每周约 8–12 小时的保守节奏；全职投入可以缩短，但不建议按天计算。
+### 从 JD 模式与公开实践归纳
 
-## 规划假设
+${credibility.jdDerived.map((item) => `- ${item}`).join("\n")}
 
-${assumptions.map((item) => `- ${item}`).join("\n")}
+### 来自当前输入的假设
+
+${credibility.assumptions.map((item) => `- ${item}`).join("\n")}
+
+### 方法边界
+
+${credibility.methodLimits.map((item) => `- ${item}`).join("\n")}
+
+- 不编造公司名、薪资或通过率。
 
 ## 1. 背景摘要
 
@@ -92,33 +142,23 @@ ${background.projectNotes.trim() || "（未填）"}
 
 ${background.resumeText.trim() || "（未粘贴）"}
 
-## 2. 目标岗位与常见要求
+## 2. 目标岗位与要求
 
 **${role.name}**（${role.nameEn}）— ${role.tagline}
 
 ${role.summary}
 
-### 常见职级称呼对照
+典型转岗/补齐顺序：${transferPattern}
+
+### 职级称呼对照
 
 - 初级：${role.typicalTitles.junior}
 - 中级：${role.typicalTitles.mid}
 - 高级：${role.typicalTitles.senior}
 
-### 学历侧常见写法
-
 ${role.educationNote}
 
-### 硬性技能（must）
-
-${reqMust}
-
-### 高频加分 / 中级项（should）
-
-${reqShould || "（该方向 should 项已并入上文）"}
-
-### 信息来源类型
-
-${role.sources.map((s) => `- ${s}`).join("\n")}
+${reqBlock}
 
 ## 3. 差距分析
 
@@ -134,9 +174,17 @@ ${otherGaps}
 
 ${phaseMd}
 
-## 5. 下一步
+## 5. 证据清单
 
-你可以在工具中更换目标岗位并重新生成路径，无需重填背景。建议每完成一个阶段就回填项目备注，让下一次差距分析更准。
+${evidenceChecklist.map((item) => `- [ ] ${item}`).join("\n")}
+
+## 6. 风险与反模式
+
+${antiPatterns.map((item) => `- ${item}`).join("\n")}
+
+## 7. 下一步
+
+更换目标岗位可重新生成，不必重填背景。每完成一阶段请回填项目备注，让下一次差距更准。
 `;
 }
 
@@ -155,7 +203,5 @@ export function downloadMarkdown(filename: string, markdown: string) {
 export function filenameFor(roleName: string): string {
   const date = new Date().toISOString().slice(0, 10);
   const safe = roleName.replace(/[\\/:*?"<>|]/g, "");
-  return `职业规划-${safe}-${date}.md`;
+  return `职业规划报告-${safe}-${date}.md`;
 }
-
-export { FIT, SEVERITY };

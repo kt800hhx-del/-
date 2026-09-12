@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+:root {
+  --font-cn-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    "Source Han Sans SC", system-ui, sans-serif;
+  --font-cn-serif: "Songti SC", "Noto Serif SC", "STSong", "SimSun", "PMingLiU", Georgia, serif;
+}
+
 @theme inline {
   --color-canvas: #f3f2ee;
   --color-ink: #14161c;
@@ -19,8 +25,8 @@
   --color-celadon: #1b3130;
   --color-celadon-deep: #122422;
   --color-sage: #5c616b;
-  --font-sans: var(--font-noto-sans);
-  --font-serif: var(--font-noto-serif);
+  --font-sans: var(--font-cn-sans);
+  --font-serif: var(--font-cn-serif);
 }
 
 html {
@@ -31,7 +37,7 @@ body {
   min-height: 100vh;
   background: var(--color-canvas);
   color: var(--color-ink);
-  font-family: var(--font-noto-sans), "Noto Sans SC", "PingFang SC", "Source Han Sans SC", sans-serif;
+  font-family: var(--font-cn-sans);
 }
 
 ::selection {

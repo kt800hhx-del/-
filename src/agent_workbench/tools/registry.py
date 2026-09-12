@@ -12,6 +12,7 @@ from agent_workbench.tools.http_fetch import http_fetch
 from agent_workbench.tools.json_query import json_query
 from agent_workbench.tools.memory_note import make_memory_note_tool
 from agent_workbench.tools.sandbox_file import sandbox_file_read
+from agent_workbench.tools.web_search import web_search
 
 
 @dataclass
@@ -84,6 +85,21 @@ def build_default_registry(long_term_memory=None) -> ToolRegistry:
                 "required": ["url"],
             },
             handler=http_fetch,
+        )
+    )
+    reg.register(
+        Tool(
+            name="web_search",
+            description="Best-effort web search (DuckDuckGo). Returns JSON results or graceful error.",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string"},
+                    "max_results": {"type": "integer", "default": 5},
+                },
+                "required": ["query"],
+            },
+            handler=web_search,
         )
     )
     reg.register(

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-workbench"
-version = "0.1.0"
-description = "Interview-ready ReAct agent workbench with tools, memory, traces, and multi-agent demo"
+version = "0.2.0"
+description = "Travel Planning Agent + ReAct workbench: itineraries, tools, memory, traces"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

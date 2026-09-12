@@ -43,7 +43,7 @@ npm start
 ## 技术栈
 
 - Next.js（App Router）+ TypeScript
-- Tailwind CSS
+- Tailwind CSS（中文字体走系统栈：PingFang SC / 微软雅黑 / Noto Sans SC 等，不请求 Google Fonts）
 - 纯前端：推荐、差距与规划都在本地计算
 
 核心逻辑在 `lib/`：

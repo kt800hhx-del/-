@@ -106,6 +106,7 @@ export interface GapItem {
 export interface ResourceRef {
   name: string;
   kind: "官方文档" | "公开课" | "经典开源" | "书籍/手册" | "平台练习";
+  url: string;
   note: string;
 }
 

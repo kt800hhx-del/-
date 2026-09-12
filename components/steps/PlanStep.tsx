@@ -4,7 +4,7 @@ import { downloadMarkdown, filenameFor, planToMarkdown } from "@/lib/export";
 import { educationLabel } from "@/lib/constants";
 import type { CareerAnalysis, UserBackground } from "@/lib/types";
 import { useState } from "react";
-import { Button, ReportField, SectionTitle } from "../ui";
+import { Button, ReportField, ResourceList, SectionTitle } from "../ui";
 
 export function PlanStep({
   background,
@@ -157,13 +157,10 @@ export function PlanStep({
                         {action.deliverable} {action.acceptance ? `—— ${action.acceptance}` : ""}
                       </p>
                       {action.resources.length ? (
-                        <ul className="mt-2 space-y-1 text-[12px] text-muted">
-                          {action.resources.map((res) => (
-                            <li key={res.name}>
-                              资源示例 · {res.kind} · {res.name}。{res.note}
-                            </li>
-                          ))}
-                        </ul>
+                        <div className="mt-3">
+                          <p className="label">可打开的学习资源（补本条缺口）</p>
+                          <ResourceList resources={action.resources} />
+                        </div>
                       ) : null}
                     </div>
                   ))}
@@ -179,14 +176,8 @@ export function PlanStep({
               <ReportField label="时长区间 · 为何偏保守">{phase.whyConservative}</ReportField>
               <ReportField label="行业先例 / 验证说明">{phase.industryPrecedent}</ReportField>
               {phase.resources.length ? (
-                <ReportField label="参考学习 / 实践资源（示例，均为公开存在的材料）">
-                  <ul>
-                    {phase.resources.map((res) => (
-                      <li key={res.name}>
-                        · {res.name}（{res.kind}）：{res.note}
-                      </li>
-                    ))}
-                  </ul>
+                <ReportField label="本阶段汇总资源（均可点击打开）">
+                  <ResourceList resources={phase.resources} />
                 </ReportField>
               ) : null}
             </div>

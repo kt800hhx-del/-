@@ -1,3 +1,4 @@
+import { getRoleResources } from "./resources";
 import type { ResourceRef } from "./types";
 
 export interface RoleMeta {
@@ -7,7 +8,7 @@ export interface RoleMeta {
   resources: ResourceRef[];
 }
 
-export const ROLE_META: Record<string, RoleMeta> = {
+export const ROLE_META: Record<string, Omit<RoleMeta, "resources">> = {
   backend: {
     transferPattern:
       "业务后端转更资深后端，或转 LLM 应用时，行业里常见的顺序是：先把「能独立交付一个带存储/缓存的服务」做扎实，再补消息、观测或 RAG。反过来先堆框架名词、没有可运行服务，社招初筛通常过不去。",
@@ -22,14 +23,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "只刷课或只背八股，没有可打开的仓库——社招面试会立刻问项目细节。",
       "证书堆砌（语言认证、云厂商入门证）对纯业务后端社招帮助有限，不如一次线上/可演示故障复盘。",
       "把教程 CRUD 原样交作业，却声称「高并发微服务」——审阅者通常会追问量级与取舍。",
-    ],
-    resources: [
-      { name: "Spring Boot 官方参考文档", kind: "官方文档", note: "示例：若目标栈是 Java，以 docs.spring.io 的 Web / Data / Validation 章节为准，而不是二手目录。" },
-      { name: "Go 官方 Effective Go / Gin 文档", kind: "官方文档", note: "示例：Go 栈用官方语言指南 + github.com/gin-gonic/gin README。" },
-      { name: "FastAPI 官方教程", kind: "官方文档", note: "示例：Python 栈用 fastapi.tiangolo.com，覆盖依赖注入与校验。" },
-      { name: "MySQL 8.0 Reference Manual（索引与事务章节）", kind: "官方文档", note: "对照 JD 里的「熟悉索引/事务」，以官方手册而不是口诀表为准。" },
-      { name: "Redis 官方文档（Eviction / Persistence）", kind: "官方文档", note: "用来写清缓存过期与一致性，而不是只写「用了 Redis」。" },
-      { name: "Apache Kafka 官方文档（入门与语义）", kind: "官方文档", note: "示例资源；未上队列的阶段可后置。" },
     ],
   },
   frontend: {
@@ -47,13 +40,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "堆砌 UI 模板却没有自己的状态设计，作品集说服力弱。",
       "前端证书对社招通常弱于可维护的仓库与性能案例。",
     ],
-    resources: [
-      { name: "MDN Web Docs（HTML / CSS / HTTP）", kind: "官方文档", note: "浏览器与网络基础的权威出处。" },
-      { name: "TypeScript Handbook", kind: "官方文档", note: "www.typescriptlang.org/docs/handbook" },
-      { name: "React 官方文档（或 Vue 官方文档，择一深入）", kind: "官方文档", note: "以官方「Learn」路径为准，避免只看过时博客。" },
-      { name: "web.dev / Lighthouse 文档", kind: "官方文档", note: "用于做可核对的性能前后对比。" },
-      { name: "Vite 官方指南", kind: "官方文档", note: "工程化最小配置的示例起点。" },
-    ],
   },
   fullstack: {
     transferPattern:
@@ -69,13 +55,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "前端套 BaaS 后自称全栈，却讲不清数据模型与权限——JD 常按「能写后端」筛选。",
       "同时学三套语言栈，半年没有一个能打开的产品。",
     ],
-    resources: [
-      { name: "Next.js 官方文档（App Router / 部署）", kind: "官方文档", note: "示例：若走 TS 全栈，nextjs.org/docs 是可核对的基线。" },
-      { name: "React 官方文档", kind: "官方文档", note: "页面与状态。" },
-      { name: "PostgreSQL 官方教程 或 SQLite 文档", kind: "官方文档", note: "先把表约束写对，再谈云数据库。" },
-      { name: "OWASP Cheat Sheet Series（Auth / Session）", kind: "官方文档", note: "鉴权与常见 Web 安全基线，不是渗透课程替代品。" },
-      { name: "Docker 官方 Get Started", kind: "官方文档", note: "用于一条命令启动的交付。" },
-    ],
   },
   "data-eng": {
     transferPattern:
@@ -90,12 +69,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
     antiPatterns: [
       "用「会 Pandas」对标数仓开发 JD——筛选词通常是 SQL + 计算引擎 + 调度。",
       "没有口径文档的宽表，面试无法讨论一致性。",
-    ],
-    resources: [
-      { name: "Spark 官方 SQL / Programming Guide", kind: "官方文档", note: "spark.apache.org；或 Flink 官方教程，二者择一对齐 JD。" },
-      { name: "Apache Airflow 官方教程", kind: "官方文档", note: "调度与重试的通用示例；国内也常见 DolphinScheduler，概念可迁移。" },
-      { name: "Hive / Spark SQL 官方语法手册", kind: "官方文档", note: "窗口函数与分区是面试高频，以官方语法为准。" },
-      { name: "The Data Warehouse Toolkit（维度建模，示例书）", kind: "书籍/手册", note: "作为建模词汇来源，不是某家公司内部规范。" },
     ],
   },
   ml: {
@@ -113,12 +86,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "编造大规模线上提升；小样本必须标明。",
       "证书（如入门 MOOC 完成证）通常替代不了可复现仓库。",
     ],
-    resources: [
-      { name: "PyTorch 官方 Tutorials", kind: "官方文档", note: "pytorch.org/tutorials，以训练-验证-推理脚本为目标。" },
-      { name: "scikit-learn 用户指南（模型选择与数据泄漏）", kind: "官方文档", note: "表格任务与基线。" },
-      { name: "Hugging Face Learn / NLP Course（示例）", kind: "公开课", note: "huggingface.co/learn，用于建立可复现实验习惯。" },
-      { name: "《统计学习方法》或官方 CS229 讲义（示例）", kind: "公开课", note: "补基础公式，不替代项目。" },
-    ],
   },
   "llm-app": {
     transferPattern:
@@ -135,13 +102,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "只展示一次惊艳 Demo，没有评测与失败案例。",
       "堆砌 LangChain 组件却讲不清检索错还是生成错。",
     ],
-    resources: [
-      { name: "所选模型厂商的官方 API 文档（OpenAI / 通义 / Claude 等，择一）", kind: "官方文档", note: "以你实际调用的那一家为准，记录模型名与参数。" },
-      { name: "LangChain 官方文档（RAG / Tracing 章节）", kind: "官方文档", note: "python.langchain.com，作为编排示例；也可用自研替代，但要有轨迹。" },
-      { name: "LlamaIndex 官方文档（示例）", kind: "官方文档", note: "docs.llamaindex.ai，偏数据索引。" },
-      { name: "Hugging Face Agents / RAG 相关课程页（示例）", kind: "公开课", note: "huggingface.co/learn，用于建立评测意识。" },
-      { name: "FastAPI 官方文档", kind: "官方文档", note: "把模型调用做成可运维服务。" },
-    ],
   },
   agent: {
     transferPattern:
@@ -156,12 +116,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
     antiPatterns: [
       "无限聊天包装成 Agent，没有工具与停止条件。",
       "在未授权系统上演示「自动操作」。",
-    ],
-    resources: [
-      { name: "OpenAI Function Calling / 工具调用官方说明（或你所用厂商的等价文档）", kind: "官方文档", note: "以实际 API 为准。" },
-      { name: "LangGraph 官方文档（示例）", kind: "官方文档", note: "langchain-ai.github.io/langgraph，状态机式 Agent 的公开实现之一。" },
-      { name: "Hugging Face Agents 课程（示例）", kind: "公开课", note: "强调工具与评测，而不是提示词技巧。" },
-      { name: "OpenTelemetry 或 LangSmith 文档（示例）", kind: "官方文档", note: "轨迹与追踪；也可用结构化日志自研。" },
     ],
   },
   devops: {
@@ -178,13 +132,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "只考取云厂商认证、没有自己维护过的流水线——证书是加分，通常不是社招主证据。",
       "把「会点控制台」写成自动化经验。",
     ],
-    resources: [
-      { name: "Kubernetes 官方文档（Concepts / Tutorials）", kind: "官方文档", note: "kubernetes.io；传统运维岗可后置。" },
-      { name: "Docker 官方文档", kind: "官方文档", note: "多阶段构建与非 root。" },
-      { name: "GitHub Actions 或 GitLab CI 官方文档", kind: "官方文档", note: "按你实际使用的流水线产品选择。" },
-      { name: "Prometheus / Grafana 官方入门", kind: "官方文档", note: "指标与告警噪音治理。" },
-      { name: "Google SRE Book（公开线上版，方法论）", kind: "书籍/手册", note: "SLO/错误预算的通行词汇，不是某家雇主的承诺。" },
-    ],
   },
   qa: {
     transferPattern:
@@ -199,11 +146,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
     antiPatterns: [
       "追求 UI 自动化条数、忽略维护成本。",
       "用「会点 Postman」代替可回归的脚本。",
-    ],
-    resources: [
-      { name: "pytest 官方文档 或 JUnit / REST Assured 文档（按语言）", kind: "官方文档", note: "接口自动化的可核对基线。" },
-      { name: "Playwright 官方文档（示例）", kind: "官方文档", note: "playwright.dev；或 Cypress 官方文档，择一。" },
-      { name: "ISTQB 大纲（测试设计术语，示例）", kind: "书籍/手册", note: "用于等价类/边界等共同语言，不是必须考证。" },
     ],
   },
   "tech-pm": {
@@ -220,11 +162,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "只有愿景页和「赋能」词汇，没有验收标准。",
       "把别人的内部文档改头换面——审阅者会问你如何验证。",
     ],
-    resources: [
-      { name: "NN/g 或 GOV.UK 服务手册中的需求分析公开材料（示例）", kind: "书籍/手册", note: "用于问题定义结构，不是国内 JD 原文。" },
-      { name: "SQL 教程（PostgreSQL 官方或 Mode SQL Tutorial 等公开材料）", kind: "官方文档", note: "B 端/平台 PM 的常见加分。" },
-      { name: "Figma 官方 Help（若做原型）", kind: "官方文档", note: "平台 PM 也可用纯流程图替代。" },
-    ],
   },
   mobile: {
     transferPattern:
@@ -239,11 +176,6 @@ export const ROLE_META: Record<string, RoleMeta> = {
     antiPatterns: [
       "只交课设计算器，却对标中级客户端 JD。",
       "跨端框架用了但讲不清原生生命周期。",
-    ],
-    resources: [
-      { name: "Android 官方 Developers 文档 或 Apple 官方 Swift/UI 文档", kind: "官方文档", note: "按目标栈二选一深入。" },
-      { name: "Flutter 官方文档（若走跨端）", kind: "官方文档", note: "docs.flutter.dev。" },
-      { name: "官方性能指南（Android Vitals / Instruments）", kind: "官方文档", note: "崩溃与卡顿的通行指标。" },
     ],
   },
   security: {
@@ -261,23 +193,16 @@ export const ROLE_META: Record<string, RoleMeta> = {
       "只交扫描器截图，没有修复建议。",
       "证书（入门 CTF 排名、部分认证）是加分，通常替代不了报告质量。",
     ],
-    resources: [
-      { name: "OWASP Top 10 与 OWASP Testing Guide（公开）", kind: "官方文档", note: "应用安全的共同语言。" },
-      { name: "PortSwigger Web Security Academy（合法靶场，示例）", kind: "平台练习", note: "只在授权环境练习。" },
-      { name: "官方语言安全文档（如 Java Secure Coding、Go 安全指南）", kind: "官方文档", note: "安全开发向。" },
-    ],
   },
 };
 
 export function getRoleMeta(roleId: string): RoleMeta {
-  return (
-    ROLE_META[roleId] ?? {
-      transferPattern: "先补该方向 JD 高频硬技能，再做 1 个可演示项目，再对齐简历与面试表达。这是国内社招最常见的补齐顺序，而不是捷径承诺。",
-      evidenceChecklist: ["可运行仓库", "README 与范围说明", "一次可复核的结果或复盘"],
-      antiPatterns: ["只学习不交付可检查的证据。"],
-      resources: [],
-    }
-  );
+  const base = ROLE_META[roleId] ?? {
+    transferPattern: "先补该方向 JD 高频硬技能，再做 1 个可演示项目，再对齐简历与面试表达。这是国内社招最常见的补齐顺序，而不是捷径承诺。",
+    evidenceChecklist: ["可运行仓库", "README 与范围说明", "一次可复核的结果或复盘"],
+    antiPatterns: ["只学习不交付可检查的证据。"],
+  };
+  return { ...base, resources: getRoleResources(roleId) };
 }
 
 export function hiringWhyForLevel(level: "must" | "should" | "nice"): string {

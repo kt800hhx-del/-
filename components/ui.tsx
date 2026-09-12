@@ -1,3 +1,4 @@
+import type { ResourceRef } from "@/lib/types";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -132,6 +133,29 @@ export function ReportField({ label, children }: { label: string; children: Reac
       <p className="label">{label}</p>
       <div className="mt-2 text-[13px] leading-6 text-ink">{children}</div>
     </div>
+  );
+}
+
+export function ResourceList({ resources }: { resources: ResourceRef[] }) {
+  if (!resources.length) return null;
+  return (
+    <ul className="mt-2 space-y-3">
+      {resources.map((res) => (
+        <li key={`${res.url}-${res.name}`} className="text-[13px] leading-6">
+          <span className="text-[11px] text-muted">{res.kind}</span>{" "}
+          <a
+            href={res.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-[#0b57d0] underline underline-offset-2 hover:text-[#0842a0]"
+          >
+            {res.name}
+          </a>
+          <p className="break-all text-[11px] text-[#0b57d0]/80">{res.url}</p>
+          <p className="text-muted">{res.note}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 

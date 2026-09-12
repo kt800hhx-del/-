@@ -66,7 +66,7 @@ ${skills
         .map((action, i) => {
           const tasks = action.weeklyTasks.map((t) => `       - ${t}`).join("\n");
           const res = action.resources
-            .map((r) => `       - ${r.name}（${r.kind}，示例）${r.note ? `：${r.note}` : ""}`)
+            .map((r) => `       - [${r.name}](${r.url})（${r.kind}）：${r.note}`)
             .join("\n");
           return `  ${i + 1}. **${action.title}**（约 ${action.weeks} 周）
      - ${action.detail}
@@ -78,7 +78,7 @@ ${tasks}
         .join("\n");
       const acc = phase.acceptance.map((item) => `- ${item}`).join("\n");
       const res = phase.resources
-        .map((r) => `- ${r.name}（${r.kind}，示例）：${r.note}`)
+        .map((r) => `- [${r.name}](${r.url})（${r.kind}）：${r.note}`)
         .join("\n");
       return `### 阶段 ${index + 1}：${phase.name}（约 ${phase.durationMonths[0]}–${phase.durationMonths[1]} 个月）
 
@@ -95,7 +95,7 @@ ${acc}
 
 **行业先例 / 验证说明：** ${phase.industryPrecedent}
 
-**参考资源类型（示例，均公开存在）：**
+**可打开的学习资源（完整 https 链接）：**
 ${res || "（本阶段以你自己的 JD 对照与口述练习为主）"}`;
     })
     .join("\n\n");

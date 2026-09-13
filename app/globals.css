@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --font-cn-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    "Source Han Sans SC", system-ui, sans-serif;
+  --font-cn-serif: "Songti SC", "Noto Serif SC", "STSong", "SimSun", "PMingLiU", Georgia, serif;
+}
+
+@theme inline {
+  --color-canvas: #f3f2ee;
+  --color-ink: #14161c;
+  --color-muted: #5c616b;
+  --color-card: #ffffff;
+  --color-line: #d9d6cf;
+  --color-hair: #eceae4;
+  --color-accent: #1b3130;
+  --color-accent-soft: #e4ece9;
+  --color-ok: #1e5a44;
+  --color-ok-soft: #e5f1ea;
+  --color-warn: #8a5808;
+  --color-warn-soft: #f6eedc;
+  --color-danger: #8f2d22;
+  --color-danger-soft: #f6e6e3;
+  --color-paper: #f3f2ee;
+  --color-celadon: #1b3130;
+  --color-celadon-deep: #122422;
+  --color-sage: #5c616b;
+  --font-sans: var(--font-cn-sans);
+  --font-serif: var(--font-cn-serif);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-cn-sans);
+}
+
+::selection {
+  background: #d7e2de;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.report-shell {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--color-muted);
+}
+
+.step-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
